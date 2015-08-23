@@ -25,10 +25,61 @@ var MOUSE = {
     path: null
 }
 
-var width = 7;
-var height = 7;
-var offsetx = canvas.width * 0.3;
+var WIDTH_LEFT = {
+    x: screenWidth*0.1,
+    y: screenHeight*0.32,
+    width: screenWidth*0.05,
+    height: screenWidth*0.05
+}
+
+var WIDTH_RIGHT = {
+    x: screenWidth*0.25,
+    y: screenHeight*0.32,
+    width: screenWidth*0.05,
+    height: screenWidth*0.05
+}
+
+var HEIGHT_LEFT = {
+    x: screenWidth*0.1,
+    y: screenHeight*0.52,
+    width: screenWidth*0.05,
+    height: screenWidth*0.05
+}
+
+var HEIGHT_RIGHT = {
+    x: screenWidth*0.25,
+    y: screenHeight*0.52,
+    width: screenWidth*0.05,
+    height: screenWidth*0.05
+}
+
+var CREATE_NEW = {
+    x: screenWidth*0.1,
+    y: screenHeight*0.67,
+    width: screenWidth*0.2,
+    height: screenWidth*0.05
+}
+
+var REFRESH = {
+    x: screenWidth*0.1,
+    y: screenHeight*0.8,
+    width: screenWidth*0.2,
+    height: screenWidth*0.05
+}
+
+var Title = loadImage("Title.png");
+var Left_Button = loadImage("Left-Button.png");
+var Right_Button = loadImage("Right-Button.png");
+
+var buttons = [WIDTH_LEFT,WIDTH_RIGHT,HEIGHT_LEFT,HEIGHT_RIGHT,CREATE_NEW,REFRESH];
+
+var width = 5;
+var width_counter = width;
+var height = 5;
+var height_counter = height;
+var offsetx = canvas.width * 0.4;
 var offsety = canvas.height * 0.1;
+var scale;
 
 var grid = [];
 resetGrid();
@@ -65,6 +116,15 @@ colors = [  [1,0,0],
 
 
 function createGame() {
+    if (height >= width) {
+        scale = (canvas.height*0.8)/height;
+        offsetx = (canvas.width * 0.4) + (height-width)*scale/2;
+        offsety = (canvas.height * 0.1);
+    } else {
+        scale = (canvas.width*0.55)/width;
+        offsetx = (canvas.width * 0.4);
+        offsety = (canvas.height * 0.1) + (width-height)*scale/2;
+    }
     var finished = false;
     while (!finished) {
         resetGrid();
@@ -243,13 +303,38 @@ function simplify_paths() {
 ///////////////////////////////////////////////////////////////
 
 
-function drawGrid() {
-    var scale;
-    if (height >= width) {
-        scale = (canvas.height*0.8)/height;
-    } else {
-        scale = (canvas.width*0.6)/width;
+function drawMenu() {
+    drawImage(Title,0.03*screenWidth,0.1*screenHeight,0.35*screenWidth,0.1*screenHeight);
+    fillText(   "width",WIDTH_LEFT.x+(WIDTH_RIGHT.x-WIDTH_LEFT.x)/1.5,WIDTH_LEFT.y-1.1*WIDTH_LEFT.height,
+                makeColor(1,1,1,1),"80px sans-serif","center","top");
+    drawImage(Left_Button,WIDTH_LEFT.x,WIDTH_LEFT.y,WIDTH_LEFT.width,WIDTH_LEFT.height);
+    fillText(   width_counter,WIDTH_LEFT.x+(WIDTH_RIGHT.x-WIDTH_LEFT.x)/1.5,WIDTH_LEFT.y,
+                makeColor(1,1,1,1),"110px sans-serif","center","top");
+    drawImage(Right_Button,WIDTH_RIGHT.x,WIDTH_RIGHT.y,WIDTH_RIGHT.width,WIDTH_RIGHT.height);
+    fillText(   "height",HEIGHT_LEFT.x+(HEIGHT_RIGHT.x-HEIGHT_LEFT.x)/1.5,HEIGHT_LEFT.y-1.1*HEIGHT_LEFT.height,
+                makeColor(1,1,1,1),"80px sans-serif","center","top");
+    drawImage(Left_Button,HEIGHT_LEFT.x,HEIGHT_LEFT.y,HEIGHT_LEFT.width,HEIGHT_LEFT.height);
+    fillText(   height_counter,HEIGHT_LEFT.x+(HEIGHT_RIGHT.x-HEIGHT_LEFT.x)/1.5,HEIGHT_LEFT.y,
+                makeColor(1,1,1,1),"110px sans-serif","center","top");
+    drawImage(Right_Button,HEIGHT_RIGHT.x,HEIGHT_RIGHT.y,HEIGHT_RIGHT.width,HEIGHT_RIGHT.height);
+    strokeRectangle(CREATE_NEW.x,CREATE_NEW.y,CREATE_NEW.width,CREATE_NEW.height,makeColor(1,1,1,1),8,5);
+    fillText(   "create new",CREATE_NEW.x+0.5*CREATE_NEW.width,CREATE_NEW.y+0.5*CREATE_NEW.height,
+                makeColor(1,1,1,1),"60px sans-serif","center","middle");
+    strokeRectangle(REFRESH.x,REFRESH.y,REFRESH.width,REFRESH.height,makeColor(1,1,1,1),8,5);
+    fillText(   "refresh",REFRESH.x+0.5*REFRESH.width,REFRESH.y+0.5*REFRESH.height,
+                makeColor(1,1,1,1),"60px sans-serif","center","middle");
+    for (var i=0; i<buttons.length; i++) {
+        var b = buttons[i];
+        if (    MOUSE.px > b.x && MOUSE.px < (b.x + b.width) &&
+                MOUSE.py > b.y && MOUSE.py < (b.y + b.height) ) {
+            strokeRectangle(b.x,b.y,b.width,b.height,makeColor(.6,1,1,1),10,5);
+        }
     }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+function drawGrid() {
     for (var i=0; i<=grid.length; i++) {
         strokeLine(offsetx+i*scale,offsety,offsetx+i*scale,offsety+scale*grid[0].length,makeColor(1,1,1,1),5);
     }
@@ -263,12 +348,6 @@ function drawGrid() {
 
 
 function drawMaze() {
-    var scale;
-    if (height >= width) {
-        scale = (canvas.height*0.8)/height;
-    } else {
-        scale = (canvas.width*0.6)/width;
-    }
     for (var x=0; x<grid.length; x++) {
         for (var y=0; y<grid[x].length; y++) {
             var current = grid[x][y]
@@ -290,12 +369,6 @@ function drawMaze() {
 //--------------------------------------------------------------------------------------------------
 
 function drawPaths() {
-    var scale;
-    if (height >= width) {
-        scale = (canvas.height*0.8)/height;
-    } else {
-        scale = (canvas.width*0.6)/width;
-    }
     for (var i=0; i<path_list.length; i++) {
         var current = path_list[i].start;
         var fillColor = makeColor(colors[i][0],colors[i][1],colors[i][2],1);
@@ -341,10 +414,11 @@ function onTick() {
 //--------------------------------------------------------------------------------------------------
 
 function doGraphics() {
-    clearRectangle(0, 0, screenWidth, screenHeight);
+    fillRectangle(0, 0, screenWidth, screenHeight,makeColor(.05,.05,.05,1));
     drawGrid();
     //drawMaze();
     drawPaths();
+    drawMenu();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -367,6 +441,29 @@ function selectPathFromCell(selected_path,selected_cell) {
     MOUSE.path = selected_path;
 }
 
+function activateButton(button) {
+    if (button == WIDTH_LEFT) {
+        width_counter = max(5,width_counter-1);
+    }
+    else if (button == WIDTH_RIGHT) {
+        width_counter = min(9,width_counter+1);
+    }
+    else if (button == HEIGHT_LEFT) {
+        height_counter = max(5,height_counter-1);
+    }
+    else if (button == HEIGHT_RIGHT) {
+        height_counter = min(9,height_counter+1);
+    }
+    else if (button == CREATE_NEW) {
+        width = width_counter;
+        height = height_counter;
+        createGame();
+    }
+    else if (button == REFRESH) {
+        resetPaths();
+    }
+}
+
 function onTouchStart(x,y) {
     getGridLocation(x,y);
     MOUSE.down = true;
@@ -384,6 +481,15 @@ function onTouchStart(x,y) {
             }
         }
     }
+    else {
+        for (var i=0; i<buttons.length; i++) {
+            var b = buttons[i];
+            if (    MOUSE.px > b.x && MOUSE.px < (b.x + b.width) &&
+                    MOUSE.py > b.y && MOUSE.py < (b.y + b.height) ) {
+                activateButton(b);
+            }
+        }
+    }
 }
 
 function onTouchEnd(x,y) {
@@ -391,8 +497,6 @@ function onTouchEnd(x,y) {
     MOUSE.path = null;
     MOUSE.x = -1;
     MOUSE.y = -1;
-    MOUSE.px = -1.0;
-    MOUSE.py = -1.0;
 }
 
 function onMouseMove(x,y) {
@@ -443,15 +547,9 @@ function onTouchMove(x,y) {
 //--------------------------------------------------------------------------------------------------
 
 function getGridLocation(px, py) {
-    var scale;
-    if (height >= width) {
-        scale = (canvas.height*0.8)/height;
-    } else {
-        scale = (canvas.width*0.6)/width;
-    }
     var x = floor((px - offsetx) / scale);
     var y = floor((py - offsety) / scale);
-    if (x < 0 || x >= width || y < 0 || y >= height) { 
+    if (x < 0 || x >= grid.length || y < 0 || y >= grid[0].length) { 
         x = -1; 
         y = -1; 
     }
