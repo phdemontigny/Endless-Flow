@@ -330,12 +330,12 @@ function drawMenu() {
         fillRectangle(screenWidth*0.441,screenHeight*0.35,screenWidth*0.45,screenHeight*0.3,makeColor(0.05,0.05,0.05,0.95));
         strokeRectangle(screenWidth*0.441,screenHeight*0.35,screenWidth*0.45,screenHeight*0.3,makeColor(1,1,1,1),20,10);
         if (victory == "correct") {
-            fillText("Correct!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
-            fillText("But a perfect solution has",screenWidth*0.665,screenHeight*0.52,makeColor(1,1,1,1),"40px sans-serif","center","middle");
+            fillText("Level complete!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
+            fillText("but a perfect solution has",screenWidth*0.665,screenHeight*0.52,makeColor(1,1,1,1),"40px sans-serif","center","middle");
             fillText("no overlapping flows.",screenWidth*0.665,screenHeight*0.56,makeColor(1,1,1,1),"40px sans-serif","center","middle");
         }
         else if (victory == "perfect") {
-            fillText("Perfect!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
+            fillText("Level complete!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
             fillText("You found the optimal solution.",screenWidth*0.665,screenHeight*0.52,makeColor(1,1,1,1),"40px sans-serif","center","middle");
             fillText("Well done!",screenWidth*0.665,screenHeight*0.56,makeColor(1,1,1,1),"40px sans-serif","center","middle");
         }
