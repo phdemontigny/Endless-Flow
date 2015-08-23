@@ -484,8 +484,8 @@ function onTouchStart(x,y) {
     else {
         for (var i=0; i<buttons.length; i++) {
             var b = buttons[i];
-            if (    MOUSE.px > b.x && MOUSE.px < (b.x + b.width) &&
-                    MOUSE.py > b.y && MOUSE.py < (b.y + b.height) ) {
+            if (    x > b.x && x < (b.x + b.width) &&
+                    y > b.y && y < (b.y + b.height) ) {
                 activateButton(b);
             }
         }
