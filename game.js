@@ -138,6 +138,7 @@ function createGame() {
             }
         }
     }
+    shuffle(path_list);
     resetPaths();
 }
 
@@ -590,6 +591,20 @@ function contains(list, element) {
 
 function distance(cell1, cell2) {
     return abs(cell1.x - cell2.x) + abs(cell1.y - cell2.y);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+function shuffle(array) {
+    var counter = array.length;
+    while (counter > 0) {
+        index = Math.floor(Math.random() * counter);
+        counter--;
+        temp = array[counter];
+        array[counter] = array[index];
+        array[index] = temp;
+    }
+    return array;
 }
 
 //--------------------------------------------------------------------------------------------------
