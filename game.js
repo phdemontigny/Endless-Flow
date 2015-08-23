@@ -81,31 +81,27 @@ var offsetx = canvas.width * 0.4;
 var offsety = canvas.height * 0.1;
 var scale;
 
+var PAUSED = false;
+var victory = "perfect";
 var grid = [];
 resetGrid();
 var path_list = [];
 
-colors = [  [1,0,0],
-            [0,1,0],
-            [0,0,1],
-            [1,1,0],
-            [1,0,1],
-            [0,1,1],
-            [.75,.75,.75],
-            [1,.5,0],
-            [1,0,.5],
-            [.5,1,0],
-            [0,1,.5],
-            [.5,0,1],
-            [0,.5,1],
-            [.5,.5,.5],
-            [.5,.5,0],
-            [.5,0,.5],
-            [0,.5,.5],
-            [.5,0,0],
-            [0,.5,0],
-            [0,0,.5],
-            [.25,.25,.25]];
+colors = [  [1,0,0], //red
+            [0,1,0], //green
+            [0,0,1], //blue
+            [1,1,0], //yellow
+            [1,.5,0], //orange
+            [0,1,1], //light blue
+            [1,0,1], //pink
+            [.6,0,.9], //light purple
+            [.7,.7,.7], //light gray
+            [.5,0,0], //dark red
+            [0,.4,0], //dark green
+            [0,0,.4], //dark blue
+            [.3,0,.3], //purple
+            [0,.3,.3], //dark blue-green
+            [.3,.3,.3]]; //gray
 
 
 ///////////////////////////////////////////////////////////////
@@ -133,7 +129,7 @@ function createGame() {
         createPaths();
         fillPaths();
         simplify_paths();
-        if (path_list.length < colors.length) {
+        if (path_list.length <= colors.length) {
             finished = true;
             for (var j=0; j<path_list.length; j++) {
                 if (path_list[j].length < 3) {
@@ -330,16 +326,30 @@ function drawMenu() {
             strokeRectangle(b.x,b.y,b.width,b.height,makeColor(.6,1,1,1),10,5);
         }
     }
+    if (PAUSED) {
+        fillRectangle(screenWidth*0.441,screenHeight*0.35,screenWidth*0.45,screenHeight*0.3,makeColor(0.05,0.05,0.05,0.95));
+        strokeRectangle(screenWidth*0.441,screenHeight*0.35,screenWidth*0.45,screenHeight*0.3,makeColor(1,1,1,1),20,10);
+        if (victory == "correct") {
+            fillText("Correct!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
+            fillText("But a perfect solution has",screenWidth*0.665,screenHeight*0.52,makeColor(1,1,1,1),"40px sans-serif","center","middle");
+            fillText("no overlapping flows.",screenWidth*0.665,screenHeight*0.56,makeColor(1,1,1,1),"40px sans-serif","center","middle");
+        }
+        else if (victory == "perfect") {
+            fillText("Perfect!",screenWidth*0.665,screenHeight*0.45,makeColor(1,1,1,1),"80px sans-serif","center","middle");
+            fillText("You found the optimal solution.",screenWidth*0.665,screenHeight*0.52,makeColor(1,1,1,1),"40px sans-serif","center","middle");
+            fillText("Well done!",screenWidth*0.665,screenHeight*0.56,makeColor(1,1,1,1),"40px sans-serif","center","middle");
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
 
 function drawGrid() {
     for (var i=0; i<=grid.length; i++) {
-        strokeLine(offsetx+i*scale,offsety,offsetx+i*scale,offsety+scale*grid[0].length,makeColor(1,1,1,1),5);
+        strokeLine(offsetx+i*scale,offsety,offsetx+i*scale,offsety+scale*grid[0].length,makeColor(0.9,0.9,0.9,1),5);
     }
     for (var i=0; i<=grid[0].length; i++) {
-        strokeLine(offsetx,offsety+i*scale,offsetx+grid.length*scale,offsety+i*scale,makeColor(1,1,1,1),5);
+        strokeLine(offsetx,offsety+i*scale,offsetx+grid.length*scale,offsety+i*scale,makeColor(0.9,0.9,0.9,1),5);
     }
 }
 
@@ -455,11 +465,13 @@ function activateButton(button) {
         height_counter = min(9,height_counter+1);
     }
     else if (button == CREATE_NEW) {
+        PAUSED = false;
         width = width_counter;
         height = height_counter;
         createGame();
     }
     else if (button == REFRESH) {
+        PAUSED = false;
         resetPaths();
     }
 }
@@ -467,7 +479,7 @@ function activateButton(button) {
 function onTouchStart(x,y) {
     getGridLocation(x,y);
     MOUSE.down = true;
-    if (MOUSE.x > -1 && MOUSE.y > -1) {
+    if (!PAUSED && MOUSE.x > -1 && MOUSE.y > -1) {
         var selected_cell = grid[MOUSE.x][MOUSE.y];
         var selected_path = selected_cell.path;
         if (selected_path != null) {
@@ -497,6 +509,12 @@ function onTouchEnd(x,y) {
     MOUSE.path = null;
     MOUSE.x = -1;
     MOUSE.y = -1;
+    if (!PAUSED) {
+        victory = testVictory();
+        if (victory != "false") {
+            PAUSED = true;
+        }
+    }
 }
 
 function onMouseMove(x,y) {
@@ -505,7 +523,7 @@ function onMouseMove(x,y) {
 }
 
 function onTouchMove(x,y) {
-    if (MOUSE.down == true && MOUSE.path != null) {
+    if (!PAUSED && MOUSE.down == true && MOUSE.path != null) {
         var starting_cell = grid[MOUSE.x][MOUSE.y];
         var starting_path = starting_cell.path;
         getGridLocation(x,y);
@@ -576,6 +594,32 @@ function distance(cell1, cell2) {
 
 //--------------------------------------------------------------------------------------------------
 
+function testVictory() {
+    var perfect = true;
+    for (var i=0; i<grid.length-1; i++) {
+        for (var j=0; j<grid[i].length-1; j++) {
+            if (grid[i][j].path == null || grid[i+1][j].path == null || 
+                grid[i][j+1].path == null || grid[i+1][j+1].path == null) {
+                return "false";
+            }
+            else if (   grid[i][j].path == grid[i+1][j].path && grid[i][j].path == grid[i][j+1].path &&
+                        grid[i][j].path == grid[i+1][j+1].path) {
+                perfect = false;
+            }
+        }
+    }
+    for (var i=0; i<path_list.length; i++) {
+        if (path_list[i].end.prev == null || path_list[i].start.next == null) {
+            return "false";
+        }
+    }
+    if (perfect) {
+        return "perfect";
+    }
+    return "correct";
+}
+
+//--------------------------------------------------------------------------------------------------
 function reversePath(current_path) {
     var previous = current_path.start;
     var current = previous.next;
